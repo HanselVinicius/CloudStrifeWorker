@@ -2,6 +2,7 @@ package services
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -12,7 +13,7 @@ const REDDIT_API_URL = "REDDIT_API_URL"
 type GetPostBydSubRedditRequest struct {
 	Subreddit string
 	Limit     int
-	Offset    int
+	After     *string
 }
 
 type RedditMedia struct {
@@ -31,16 +32,25 @@ type RedditPost struct {
 
 type RedditListing struct {
 	Data struct {
+		After    string `json:"after"`
 		Children []struct {
 			Data RedditPost `json:"data"`
 		} `json:"children"`
 	} `json:"data"`
 }
 
-func GetPostsBySubReddit(getPostBydSubRedditRequest *GetPostBydSubRedditRequest) []RedditPost {
+func GetPostsBySubReddit(getPostBydSubRedditRequest *GetPostBydSubRedditRequest) ([]RedditPost, *string) {
 	url := os.Getenv(REDDIT_API_URL)
 
-	response, err := http.Get(url + "r/" + getPostBydSubRedditRequest.Subreddit)
+	reqUrl := url + "r/" + getPostBydSubRedditRequest.Subreddit + "?limit="
+
+	reqUrl += fmt.Sprintf("%d", getPostBydSubRedditRequest.Limit)
+
+	if getPostBydSubRedditRequest.After != nil {
+		reqUrl += "&after=" + *getPostBydSubRedditRequest.After
+	}
+
+	response, err := http.Get(reqUrl)
 	if err != nil {
 		log.Fatalf("Failed Reddit Request")
 	}
@@ -58,5 +68,9 @@ func GetPostsBySubReddit(getPostBydSubRedditRequest *GetPostBydSubRedditRequest)
 		posts = append(posts, child.Data)
 	}
 
-	return posts
+	if listing.Data.After == "" {
+		return posts, nil
+	}
+
+	return posts, &listing.Data.After
 }
