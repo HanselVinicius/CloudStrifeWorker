@@ -21,13 +21,14 @@ type RedditMedia struct {
 }
 
 type RedditPost struct {
-	ID       string       `json:"id"`
-	Title    string       `json:"title"`
-	SelfText string       `json:"selftext"`
-	IsVideo  bool         `json:"is_video"`
-	Ups      int          `json:"ups"`
-	Score    int          `json:"score"`
-	Media    *RedditMedia `json:"media"`
+	ID            string       `json:"id"`
+	Title         string       `json:"title"`
+	SelfText      string       `json:"selftext"`
+	IsVideo       bool         `json:"is_video"`
+	Ups           int          `json:"ups"`
+	Score         int          `json:"score"`
+	Media         *RedditMedia `json:"media"`
+	URLOverridden string       `json:"url_overridden_by_dest"`
 }
 
 type RedditListing struct {
